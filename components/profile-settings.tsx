@@ -11,7 +11,6 @@ import * as z from 'zod';
 import { useToast } from '@/hooks/use-toast';
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { ProfileContext } from '@/context/profile-context';
-import { v4 as uuidv4 } from 'uuid';
 
 const countryCodes = [
   { label: 'Malaysia (+60)', value: '+60' },
@@ -40,11 +39,11 @@ export function ProfileSettings() {
   const form = useForm<ProfileSchema>({
     resolver: zodResolver(profileSchema),
     defaultValues: {
-      id: profileData.id || '',
-      name: profileData.name || '',
-      contactNumber: profileData.contactNumber || '',
-      countryCode: profileData.countryCode || '+60',
-      email: profileData.email || '',
+      id: '',
+      name: '',
+      contactNumber: '',
+      countryCode: '+60',
+      email: '',
     },
   });
 
@@ -52,12 +51,14 @@ export function ProfileSettings() {
     if (profileData.id) {
       form.reset(profileData);
       setIsEditing(false);
+    } else {
+      setIsEditing(true);
     }
   }, [profileData, form]);
 
   const onSubmit = (data: ProfileSchema) => {
     if (!profileData.id) {
-      data.id = uuidv4();
+      data.id = '1';
     } else {
       data.id = profileData.id;
     }
@@ -142,17 +143,21 @@ export function ProfileSettings() {
           )}
         />
         <div className="flex justify-end space-x-2">
-          {!isEditing && (
+          {!isEditing && profileData.id && (
             <Button size="sm" type="button" onClick={handleEdit}>
               Edit
             </Button>
           )}
           {isEditing && (
             <>
-              <Button size="sm" variant="outline" onClick={() => {
-                form.reset(profileData);
-                setIsEditing(false);
-              }}>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => {
+                  form.reset(profileData);
+                  setIsEditing(false);
+                }}
+              >
                 Cancel
               </Button>
               <Button size="sm" type="submit">Save</Button>
