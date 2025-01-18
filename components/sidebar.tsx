@@ -3,13 +3,15 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Button } from '@/components/ui/button';
+import { LayoutDashboard, List, Table, BarChart, Settings, Tag } from 'lucide-react';
 
 const links = [
-  { href: '/dashboard', label: 'Dashboard' },
-  { href: '/items', label: 'Items' },
-  { href: '/tables', label: 'Tables' },
-  { href: '/reports', label: 'Reports' },
-  { href: '/settings', label: 'Settings' },
+  { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+  { href: '/items', label: 'Items', icon: List },
+  { href: '/categories', label: 'Categories', icon: Tag },
+  { href: '/tables', label: 'Tables', icon: Table },
+  { href: '/reports', label: 'Reports', icon: BarChart },
+  { href: '/settings', label: 'Settings', icon: Settings },
 ];
 
 export default function Sidebar() {
@@ -24,6 +26,7 @@ export default function Sidebar() {
               variant={pathname === link.href ? 'default' : 'ghost'}
               className="w-full justify-start my-1"
             >
+              <link.icon className="w-4 h-4 mr-2" />
               {link.label}
             </Button>
           </Link>

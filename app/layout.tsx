@@ -11,6 +11,8 @@ import { ProfileProvider } from '@/context/profile-context';
 import { OutletProvider } from '@/context/outlet-context';
 import { UserProvider } from '@/context/user-context';
 import { TableProvider } from '@/context/table-context';
+import { CategoryProvider } from '@/context/category-context';
+import { ItemProvider } from '@/context/item-context';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -37,15 +39,19 @@ export default function RootLayout({
             <OutletProvider>
               <UserProvider>
                 <TableProvider>
-                  <div className="flex w-full min-h-screen">
-                    <Sidebar />
-                    <div className="flex flex-col flex-1">
-                      <Header />
-                      <main className="md:pl-64">{children}</main>
-                      <Footer />
-                    </div>
-                    <MobileFooterNav />
-                  </div>
+                  <CategoryProvider>
+                    <ItemProvider>
+                      <div className="flex w-full min-h-screen">
+                        <Sidebar />
+                        <div className="flex flex-col flex-1">
+                          <Header />
+                          <main className="md:pl-64">{children}</main>
+                          <Footer />
+                        </div>
+                        <MobileFooterNav />
+                      </div>
+                    </ItemProvider>
+                  </CategoryProvider>
                 </TableProvider>
               </UserProvider>
             </OutletProvider>

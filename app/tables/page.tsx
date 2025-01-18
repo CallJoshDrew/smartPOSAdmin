@@ -32,6 +32,15 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
+import {
+  Table,
+  TableBody,
+  TableCaption,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 
 const tableSchema = z.object({
   id: z.string(),
@@ -62,7 +71,9 @@ export default function TablesPage() {
 
   const onSubmit = (data: TableSchema) => {
     const isDuplicate = tables.some(
-      (table) => table.name.toLowerCase() === data.name.toLowerCase() && table.id !== data.id
+      (table) =>
+        table.name.toLowerCase() === data.name.toLowerCase() &&
+        (editingTable ? table.id !== editingTable.id : true)
     );
 
     if (isDuplicate) {
@@ -128,7 +139,14 @@ export default function TablesPage() {
       <div className="flex items-center justify-between mb-4">
         <h1 className="text-2xl font-bold">Tables</h1>
         {!showForm && (
-          <Button size="sm" onClick={() => setShowForm(true)}>
+          <Button size="sm" onClick={() => {
+            setShowForm(true);
+            form.reset({
+              id: '',
+              name: '',
+              seats: 1,
+            });
+          }}>
             + Table
           </Button>
         )}
@@ -212,7 +230,7 @@ export default function TablesPage() {
                     <FormItem>
                       <FormLabel htmlFor="seats">Number of Seats <span className="text-red-500">*</span></FormLabel>
                       <FormControl>
-                        <Input type="number" id="seats" placeholder="Enter number of seats" {...field} onChange={(e) => field.onChange(+e.target.value)} />
+                        <Input type="number" id="seats" placeholder="Enter number of seats" {...field} onChange={(e) => field.onChange(+e.target.value)} min={1} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
