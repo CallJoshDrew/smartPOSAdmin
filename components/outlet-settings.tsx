@@ -3,7 +3,7 @@
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useState, useContext } from 'react';
+import { useState, useContext, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -66,6 +66,7 @@ const outletSchema = z.object({
   countryCode: z.string().min(1, { message: 'Country Code is required' }),
   email: z.string().min(1, { message: 'Email is required' }).email({ message: 'Invalid email address' }),
   image: z.string().optional(),
+  imageName: z.string().optional(),
 });
 
 type OutletSchema = z.infer<typeof outletSchema>;
@@ -77,6 +78,7 @@ export function OutletSettings() {
   const { outlets, setOutlets } = useContext(OutletContext);
   const [editingOutlet, setEditingOutlet] = useState<OutletSchema | null>(null);
   const [outletToDelete, setOutletToDelete] = useState<OutletSchema | null>(null);
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
   const form = useForm<OutletSchema>({
     resolver: zodResolver(outletSchema),
@@ -94,10 +96,24 @@ export function OutletSettings() {
       countryCode: '+60',
       email: '',
       image: '',
+      imageName: '',
     },
   });
 
   const onSubmit = (data: OutletSchema) => {
+		const isDuplicate = outlets.some(
+      (outlet) =>
+        outlet.name.toLowerCase() === data.name.toLowerCase() &&
+        (editingOutlet ? outlet.id !== editingOutlet.id : true)
+    );
+
+    if (isDuplicate) {
+      form.setError('name', {
+        type: 'manual',
+        message: 'Outlet name already exists.',
+      });
+      return;
+    }
     if (editingOutlet) {
       setOutlets(outlets.map(o => o.id === editingOutlet.id ? { ...data, id: o.id } : o));
       toast({
@@ -115,6 +131,7 @@ export function OutletSettings() {
     setShowForm(false);
     setEditingOutlet(null);
     form.reset();
+    setSelectedImage(null);
   };
 
   const handleEdit = (outlet: OutletSchema) => {
@@ -122,6 +139,7 @@ export function OutletSettings() {
     setSelectedCountryCode(outlet.countryCode);
     form.reset(outlet);
     setShowForm(true);
+    setSelectedImage(outlet.image || null);
   };
 
   const handleDelete = (outlet: OutletSchema) => {
@@ -147,18 +165,26 @@ export function OutletSettings() {
     setShowForm(false);
     setEditingOutlet(null);
     form.reset();
+    setSelectedImage(null);
   };
+	
 
   const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        form.setValue('image', reader.result as string);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
+  const file = event.target.files?.[0];
+  if (file) {
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      form.setValue('image', reader.result as string);
+      form.setValue('imageName', file.name); // Set initial filename
+      setSelectedImage(reader.result as string);
+    };
+    reader.readAsDataURL(file);
+  } else {
+    form.setValue('image', '');
+    form.setValue('imageName', '');
+    setSelectedImage(null);
+  }
+};
 
   return (
     <div>
@@ -181,7 +207,9 @@ export function OutletSettings() {
               countryCode: '+60',
               email: '',
               image: '',
+              imageName: '',
             });
+            setSelectedImage(null);
           }}>
             + Outlet
           </Button>
@@ -206,7 +234,7 @@ export function OutletSettings() {
                   <p>Contact Number: {outlet.countryCode} {outlet.contactNumber}</p>
                 </div>
               </div>
-              <div className="flex items-center space-x-2">
+              <div className="flex items-center space-x-1">
                 <Button variant="ghost" size="icon" onClick={() => handleEdit(outlet)}>
                   <Pencil className="h-4 w-4" />
                 </Button>
@@ -403,18 +431,30 @@ export function OutletSettings() {
               )}
             />
             <FormField
-              control={form.control}
-              name="image"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel htmlFor="image">Image</FormLabel>
-                  <FormControl>
-                    <Input type="file" id="image" accept="image/*" onChange={handleImageChange} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
+  control={form.control}
+  name="imageName"
+  render={({ field }) => (
+    <FormItem>
+      <FormLabel htmlFor="image">Image</FormLabel>
+      <FormControl>
+        <Input type="file" id="image" accept="image/*" onChange={handleImageChange} />
+      </FormControl>
+      {selectedImage && (
+        <div className="mt-2 flex items-center space-x-2">
+          <img src={selectedImage} alt="Outlet Image" className="w-32 h-32 object-cover rounded-md" />
+          <FormControl>
+            <Input
+              type="text"
+              {...field}
+              placeholder="Enter image filename"
             />
+          </FormControl>
+        </div>
+      )}
+      <FormMessage />
+    </FormItem>
+  )}
+/>
             <div className="flex justify-end space-x-2">
               <Button size="sm" variant="outline" onClick={handleCancel}>
                 Cancel

@@ -61,6 +61,18 @@ export default function TablesPage() {
   });
 
   const onSubmit = (data: TableSchema) => {
+    const isDuplicate = tables.some(
+      (table) => table.name.toLowerCase() === data.name.toLowerCase() && table.id !== data.id
+    );
+
+    if (isDuplicate) {
+      form.setError('name', {
+        type: 'manual',
+        message: 'Table name already exists.',
+      });
+      return;
+    }
+
     if (editingTable) {
       setTables(tables.map(t => t.id === editingTable.id ? data : t));
       toast({
@@ -135,7 +147,7 @@ export default function TablesPage() {
                   <h2 className="font-medium">{table.name}</h2>
                   <p className="text-sm text-gray-500">Seats: {table.seats}</p>
                 </div>
-                <div className="flex items-center space-x-0">
+                <div className="flex items-center space-x-1">
                   <Button variant="ghost" size="icon" onClick={() => handleEdit(table)}>
                     <Pencil className="h-4 w-4" />
                   </Button>
